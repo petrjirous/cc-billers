@@ -7,6 +7,12 @@ namespace CzechCash\Billers\Structures\CreditCards;
  */
 interface ICreditCard
 {
+	/**
+	 * Gets credit card holder name
+	 *
+	 * @return string Credit card holder name
+	 */
+	public function getCardHolder();
 
     /**
      * Gets credit card number

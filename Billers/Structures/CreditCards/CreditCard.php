@@ -21,16 +21,30 @@ class CreditCard implements ICreditCard
      */
     protected $cvv;
 
+	/**
+	 * @var string Credit card holder
+	 */
+	protected $holder;
 
-    public function __construct($number, $expiration, $cvv)
+
+    public function __construct($number, $expiration, $cvv, $holder)
     {
         $this->number = $number;
         $this->expiration = $expiration;
         $this->cvv = $cvv;
+	    $this->holder = $holder;
     }
 
+	/**
+	 * @inheritDoc
+	 */
+	public function getCardHolder()
+	{
+		return $this->holder;
+	}
 
-    /**
+
+	/**
      * @inheritDoc
      */
     public function getCardNumber()

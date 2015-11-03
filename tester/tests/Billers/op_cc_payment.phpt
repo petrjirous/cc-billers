@@ -15,7 +15,7 @@ class OptimalPaymentsBillerTest extends \Tester\TestCase
     {
         $this->biller = new \CzechCash\Billers\Billers\OptimalPayments\OptimalPaymentsBiller();
         $expiry = new \CzechCash\Billers\Structures\CreditCards\CreditCardExpiry('09/16');
-        $this->creditCard = new \CzechCash\Billers\Structures\CreditCards\CreditCard('4107857757053670', $expiry, 123);
+        $this->creditCard = new \CzechCash\Billers\Structures\CreditCards\CreditCard('4107857757053670', $expiry, 123, 'some holder');
     }
 
 
