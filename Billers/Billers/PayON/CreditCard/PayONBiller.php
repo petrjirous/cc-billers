@@ -7,9 +7,6 @@ use CzechCash\Billers\Billers\BaseBiller;
 use CzechCash\Billers\ICreditCardBiller;
 use CzechCash\Billers\Structures\CreditCards\ICreditCard;
 use CzechCash\Billers\Structures\Payments\CreditCardPayment;
-use Kdyby\Curl\CurlSender;
-use Kdyby\Curl\Request;
-use Tracy\Debugger;
 
 
 /**
@@ -73,9 +70,6 @@ class PayONBiller extends BaseBiller implements ICreditCardBiller
 		$data->setUserId($this->config['authentication']['userId'])
 			->setPassword($this->config['authentication']['password'])
 			->setEntityId($this->config['authentication']['entityId']);
-
-		dump($data);
-
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->getRequestUrl());
