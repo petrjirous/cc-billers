@@ -42,6 +42,27 @@ class Synchronous extends Data
 		'DIRECTDEBIT_SEPA'
 	];
 
+	const DIRECTDEBIT_SEPA = [
+		'bankAccount_bic',
+		'bankAccount_iban',
+		'bankAccount_country',
+		'bankAccount_holder'
+	];
+
+	const CREDIT_CARD = ['creditCard'];
+
+	const KLARNA_INVOICE = [
+		'billing_country',
+		'billing_street1',
+		'billing_city',
+		'billing_postcode',
+		'cart',
+		'customer',
+		'shopperResultUrl'
+	];
+
+
+
 	/**
 	 * @var ICreditCard
 	 */
@@ -103,14 +124,24 @@ class Synchronous extends Data
 			"currency" => $this->getCurrency(),
 			"paymentBrand" => $this->getPaymentBrand(),
 			"paymentType" => $this->getPaymentType(),
-			"card.number" => $this->getCreditCard()->getCardNumber(),
-			"card.holder" => $this->getCreditCard()->getCardHolder(),
-			"card.expiryMonth" => $this->getCreditCard()->getExpiration()->getMonth(),
-			"card.expiryYear" => $this->getCreditCard()->getExpiration()->getYear("Y"),
-			"card.cvv" => $this->getCreditCard()->getCvv()
 		];
 
-		//return join('&', $data);
+		if($this->getPaymentBrand() === 'DIRECTDEBIT_SEPA'){
+			foreach(self::DIRECTDEBIT_SEPA as $property){
+				$data[str_replace('_', '.', $property)] = $this->invokeGetter($property);
+			}
+		}elseif($this->getPaymentBrand() === 'KLARNA_INVOICE'){
+			foreach(self::KLARNA_INVOICE as $property){
+				$data[str_replace('_', '.', $property)] = $this->invokeGetter($property);
+			}
+		}else{
+			$data["card.number"] = $this->getCreditCard()->getCardNumber();
+			$data["card.holder"] = $this->getCreditCard()->getCardHolder();
+			$data["card.expiryMonth"] = $this->getCreditCard()->getExpiration()->getMonth();
+			$data["card.expiryYear"] = $this->getCreditCard()->getExpiration()->getYear("Y");
+			$data["card.cvv"] = $this->getCreditCard()->getCvv();
+		}
+
 		return $data;
 	}
 

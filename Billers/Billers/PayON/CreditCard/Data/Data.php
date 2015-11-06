@@ -1,5 +1,6 @@
 <?php
 namespace Billers\PayON\CreditCard\Data;
+use Nette\Utils\Callback;
 
 
 /**
@@ -143,7 +144,8 @@ abstract class Data implements IData
 	 */
 	public abstract function setPaymentBrand($paymentBrand);
 
-	protected function setPaymentBrandForce($paymentBrand){
+	protected function setPaymentBrandForce($paymentBrand)
+	{
 		$this->paymentBrand = $paymentBrand;
 		return $this;
 	}
@@ -164,6 +166,19 @@ abstract class Data implements IData
 	{
 		$this->paymentType = $paymentType;
 		return $this;
+	}
+
+	public function invokeGetter($propertyName)
+	{
+		$getterName = ['get' . ucfirst($propertyName), 'is' . ucfirst($propertyName)];
+		$value = null;
+		foreach ($getterName as $getter) {
+			if (method_exists($this, $getter)) {
+				$value = Callback::invoke([$this, $getter]);
+				break;
+			}
+		}
+		return $value;
 	}
 
 

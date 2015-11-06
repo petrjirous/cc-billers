@@ -82,7 +82,6 @@ class PayONBiller extends BaseBiller implements ICreditCardBiller
 			return curl_error($ch);
 		}
 		curl_close($ch);
-		echo($responseData);
 		return $responseData;
 	}
 

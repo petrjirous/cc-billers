@@ -19,7 +19,6 @@ abstract class Payment implements IPayment
      */
     public $onFailure;
 
-
     /**
      * @var callable Process handlers
      */

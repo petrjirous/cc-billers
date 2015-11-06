@@ -6,3 +6,30 @@ authentication:
     userId: 8a8294174b7ecb28014b9699220015cc
     password: sy6KJsT8
     entityId: 8a8294174b7ecb28014b9699220015ca
+
+brands:
+    directdebit_sepa:
+        - amount
+        - currency
+        - paymentBrand
+        - paymentType
+        - bankAccount.bic
+        - bankAccount.iban
+        - bankAccount.country
+        - bankAccount.holder
+    payolution_elv:
+        - amount
+        - currency
+        - paymentBrand
+        - paymentType
+        - customer.givenName
+        - customer.surname
+        - customer.email
+        - customer.ip
+        - billing.street1
+        - billing.country
+        - billing.city
+        - billing.postcode
+        - customParameters
+        - shopperResultUrl
+        - testMode
