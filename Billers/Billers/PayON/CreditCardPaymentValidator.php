@@ -1,5 +1,5 @@
 <?php
-namespace Billers\PayON\CreditCard;
+namespace Billers\PayON;
 
 
 /**

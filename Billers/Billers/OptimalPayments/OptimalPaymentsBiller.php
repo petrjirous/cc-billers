@@ -61,7 +61,7 @@ class OptimalPaymentsBiller extends BaseBiller implements ICreditCardBiller
     public static function formatCreditCard(ICreditCard $card)
     {
         return [
-            'cardNum' => $card->getCardNumber(),
+            'cardNum' => $card->getNumber(),
             'cvv' => (int)$card->getCvv(),
             'cardExpiry' => [
                 'month' => (int)$card->getExpiration()->getMonth(),

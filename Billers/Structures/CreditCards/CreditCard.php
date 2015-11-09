@@ -38,7 +38,7 @@ class CreditCard implements ICreditCard
 	/**
 	 * @inheritDoc
 	 */
-	public function getCardHolder()
+	public function getHolder()
 	{
 		return $this->holder;
 	}
@@ -47,7 +47,7 @@ class CreditCard implements ICreditCard
 	/**
      * @inheritDoc
      */
-    public function getCardNumber()
+    public function getNumber()
     {
         return $this->number;
     }
@@ -83,4 +83,20 @@ class CreditCard implements ICreditCard
     {
         return $this->expiration->isValid() === false;
     }
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getExpiryYear()
+	{
+		return $this->expiration->getYear("Y");
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getExpiryMonth()
+	{
+		return $this->expiration->getMonth("m");
+	}
 }

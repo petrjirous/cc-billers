@@ -1,5 +1,5 @@
 <?php
-namespace Billers\PayON\BankTransfer\BankAccount;
+namespace Billers\PayON\Data\BankAccount;
 use Billers\PayON\BankTransfer\Exceptions\IncorrectFormatException;
 use Billers\PayON\CreditCard\Data\IArrayable;
 

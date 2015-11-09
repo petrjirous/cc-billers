@@ -1,5 +1,5 @@
 <?php
-namespace Billers\PayON\BankTransfer\Exceptions;
+namespace Billers\PayON\Data\Exceptions;
 
 
 /**

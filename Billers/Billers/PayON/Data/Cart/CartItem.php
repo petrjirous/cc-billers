@@ -1,5 +1,5 @@
 <?php
-namespace Billers\PayON\BankTransfer\Cart;
+namespace Billers\PayON\Data\Cart;
 
 
 /**

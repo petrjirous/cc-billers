@@ -1,7 +1,6 @@
 <?php
 namespace CzechCash\Billers\Structures\Payments;
 use CzechCash\Billers\Structures\BankTransfers\Interfaces\ITransferDetails;
-use CzechCash\Billers\Structures\Payments\Interfaces\IBankTransferPayment;
 use Nette\Utils\Callback;
 
 
@@ -11,32 +10,26 @@ use Nette\Utils\Callback;
  * @author Kenny
  * @package CzechCash\Billers\Structures\Payments
  */
-class BankTransferPayment extends Payment implements IBankTransferPayment
+class PayONPayment extends Payment
 {
 	/**
 	 * @var ITransferDetails
 	 */
 	protected $transferDetails;
-	/**
-	 * @var double
-	 */
-	protected $amount;
 
 	/**
-	 * BankTransferPayment constructor.
+	 * PayONPayment constructor.
 	 * @param ITransferDetails $transferDetails
-	 * @param float $amount
 	 */
-	public function __construct(ITransferDetails $transferDetails, $amount)
+	public function __construct(ITransferDetails $transferDetails)
 	{
 		$this->transferDetails = $transferDetails;
-		$this->amount = $amount;
 	}
 
 	public function process(){
 		$this->checkHandlers();
 
-		$response = Callback::invoke($this->onProcess, $this->amount, $this->transferDetails);
+		$response = Callback::invoke($this->onProcess, $this->transferDetails);
 
 		if($this->validate){
 			if($this->validate($response)){
@@ -65,22 +58,6 @@ class BankTransferPayment extends Payment implements IBankTransferPayment
 	public function getTransferDetails()
 	{
 		return $this->transferDetails;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getAmount()
-	{
-		return $this->amount;
-	}
-
-	/**
-	 * @param float $amount
-	 */
-	public function setAmount($amount)
-	{
-		$this->amount = $amount;
 	}
 
 	/**

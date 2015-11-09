@@ -12,14 +12,14 @@ interface ICreditCard
 	 *
 	 * @return string Credit card holder name
 	 */
-	public function getCardHolder();
+	public function getHolder();
 
     /**
      * Gets credit card number
      *
      * @return string Credit card number
      */
-    public function getCardNumber();
+    public function getNumber();
 
 
     /**
@@ -34,6 +34,20 @@ interface ICreditCard
      * @return ICreditCardExpiry
      */
     public function getExpiration();
+
+	/**
+	 * Get credit card expiration year
+	 *
+	 * @return int
+	 */
+	public function getExpiryYear();
+
+	/**
+	 * Get credit card expiration month
+	 *
+	 * @return int
+	 */
+	public function getExpiryMonth();
 
 
     /**

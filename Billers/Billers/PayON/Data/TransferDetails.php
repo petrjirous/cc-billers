@@ -1,7 +1,11 @@
 <?php
-namespace Billers\PayON\BankTransfer;
-use Billers\PayON\BankTransfer\Exceptions\IncorrectFormatException;
+namespace Billers\PayON\Data;
+use Billers\PayON\Data\BankAccount;
+use Billers\PayON\Data\Cart\Cart;
+use Billers\PayON\Data\Customer;
+use Billers\PayON\Data\Exceptions\IncorrectFormatException;
 use CzechCash\Billers\Structures\BankTransfers\Interfaces\ITransferDetails;
+use CzechCash\Billers\Structures\CreditCards\ICreditCard;
 
 
 /**
@@ -45,7 +49,7 @@ class TransferDetails extends BaseRequestable implements ITransferDetails
 	 */
 	private $customer;
 	/**
-	 * @var BankAccount
+	 * @var BankAccount\BankAccount
 	 */
 	private $bankAccount;
 	/**
@@ -60,6 +64,10 @@ class TransferDetails extends BaseRequestable implements ITransferDetails
 	 * @var Cart
 	 */
 	private $cart;
+	/**
+	 * @var ICreditCard
+	 */
+	private $card;
 	/**
 	 * @var string
 	 */
@@ -238,7 +246,7 @@ class TransferDetails extends BaseRequestable implements ITransferDetails
 	}
 
 	/**
-	 * @return BankAccount
+	 * @return BankAccount\BankAccount
 	 */
 	public function getBankAccount()
 	{
@@ -246,7 +254,7 @@ class TransferDetails extends BaseRequestable implements ITransferDetails
 	}
 
 	/**
-	 * @param BankAccount $bankAccount
+	 * @param BankAccount\BankAccount $bankAccount
 	 * @return TransferDetails
 	 */
 	public function setBankAccount($bankAccount)
@@ -288,6 +296,24 @@ class TransferDetails extends BaseRequestable implements ITransferDetails
 	public function setCustomParameters($customParameters)
 	{
 		$this->customParameters = $customParameters;
+		return $this;
+	}
+
+	/**
+	 * @return ICreditCard
+	 */
+	public function getCard()
+	{
+		return $this->card;
+	}
+
+	/**
+	 * @param ICreditCard $card
+	 * @return TransferDetails
+	 */
+	public function setCard($card)
+	{
+		$this->card = $card;
 		return $this;
 	}
 

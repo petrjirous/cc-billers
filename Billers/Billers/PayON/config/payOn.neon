@@ -9,6 +9,7 @@ authentication:
 
 brands:
     directdebit_sepa:
+        type: banktransfer
         - amount
         - currency
         - paymentBrand
@@ -17,19 +18,14 @@ brands:
         - bankAccount.iban
         - bankAccount.country
         - bankAccount.holder
-    payolution_elv:
+    amex: #AmericanExpress
+        type: creditcard
         - amount
         - currency
         - paymentBrand
         - paymentType
-        - customer.givenName
-        - customer.surname
-        - customer.email
-        - customer.ip
-        - billing.street1
-        - billing.country
-        - billing.city
-        - billing.postcode
-        - customParameters
-        - shopperResultUrl
-        - testMode
+        - card.number
+        - card.holder
+        - card.expiryMonth
+        - card.expiryYear
+        - card.cvv

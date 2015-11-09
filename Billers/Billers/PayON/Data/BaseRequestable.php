@@ -1,9 +1,9 @@
 <?php
-namespace Billers\PayON\BankTransfer;
+namespace Billers\PayON\Data;
 
-use Billers\PayON\BankTransfer\Exceptions\ArrayMustContainObjectsOfCustomParameterException;
-use Billers\PayON\BankTransfer\Exceptions\NotExistingGetterException;
-use Billers\PayON\BankTransfer\Exceptions\RequiredColumnValueCannotBeNullException;
+use Billers\PayON\Data\Exceptions\ArrayMustContainObjectsOfCustomParameterException;
+use Billers\PayON\Data\Exceptions\NotExistingGetterException;
+use Billers\PayON\Data\Exceptions\RequiredColumnValueCannotBeNullException;
 use Nette\Utils\Callback;
 use Tracy\Debugger;
 

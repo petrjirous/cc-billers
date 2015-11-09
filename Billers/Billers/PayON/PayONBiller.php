@@ -1,9 +1,10 @@
 <?php
-namespace Billers\PayON\BankTransfer;
+namespace Billers\PayON;
+
+use Billers\PayON\Data\Exceptions\UnsupportedTypeException;
 use CzechCash\Billers\Billers\BaseBiller;
-use CzechCash\Billers\IBankTransferBiller;
 use CzechCash\Billers\Structures\BankTransfers\Interfaces\ITransferDetails;
-use CzechCash\Billers\Structures\Payments\BankTransferPayment;
+use CzechCash\Billers\Structures\Payments\PayONPayment;
 use Tracy\Debugger;
 
 
@@ -13,9 +14,9 @@ use Tracy\Debugger;
  * @author Kenny
  * @package Billers\PayON\BankTransfer
  */
-class PayONBiller extends BaseBiller implements IBankTransferBiller
+class PayONBiller extends BaseBiller
 {
-	protected $configFile = __DIR__ . '/../config/payOn.neon';
+	protected $configFile = __DIR__ . '/config/payOn.neon';
 
 	/**
 	 * @inheritDoc
@@ -26,16 +27,26 @@ class PayONBiller extends BaseBiller implements IBankTransferBiller
 		return $rval === 0;
 	}
 
-	public function createBankTransferPayment($amount, ITransferDetails $transferDetails)
+	public function createPayment(ITransferDetails $transferDetails)
 	{
-		$payment = new BankTransferPayment($transferDetails, $amount);
+		$payment = new PayONPayment($transferDetails);
 		$payment->setTransferDetails($transferDetails);
 		$payment->onProcess = array($this, 'processPayment');
-		$payment->validate = new \Billers\PayON\CreditCard\CreditCardPaymentValidator(); // TODO dopsat validator
-		$payment->onFailure = function($response) {
+
+		$type = $this->config['brands'][strtolower($transferDetails->getPaymentBrand())]['type'];
+
+		// TODO dopsat validator
+		if ($type === "creditcard") {
+			$payment->validate = new CreditCardPaymentValidator();
+		} elseif ($type === "banktransfer") {
+			$payment->validate = new BankTransferPaymentValidator();
+		} else {
+			throw new UnsupportedTypeException();
+		}
+		$payment->onFailure = function ($response) {
 			return false;
 		};
-		$payment->onSuccess = function($response){
+		$payment->onSuccess = function ($response) {
 			return true;
 		};
 		return $payment;
@@ -51,25 +62,27 @@ class PayONBiller extends BaseBiller implements IBankTransferBiller
 		]);
 	}
 
-	public function getAuthentication(){
+	public function getAuthentication()
+	{
 		return [
 			"authentication.userId" => $this->config['authentication']['userId'],
-			"authentication.password" =>$this->config['authentication']['password'],
+			"authentication.password" => $this->config['authentication']['password'],
 			"authentication.entityId" => $this->config['authentication']['entityId']
 		];
 	}
 
-	public function processPayment($amount, ITransferDetails $transferDetails){
-
-		$transferDetails->setAmount($amount);
+	public function processPayment(ITransferDetails $transferDetails)
+	{
 
 		$brandOptions = $this->config['brands'][strtolower($transferDetails->getPaymentBrand())];
-		if($brandOptions === null){
+		unset($brandOptions['type']);
+
+		if ($brandOptions === null) {
 			$brandOptions = $this->config['brands']['default'];
 		}
 		$requestFields = $transferDetails->getRequest($brandOptions);
 
-		foreach($this->getAuthentication() as $key => $val){
+		foreach ($this->getAuthentication() as $key => $val) {
 			$requestFields[$key] = $val;
 		}
 

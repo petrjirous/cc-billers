@@ -1,6 +1,6 @@
 <?php
-namespace Billers\PayON\BankTransfer;
-use Billers\PayON\BankTransfer\Exceptions\IncorrectFormatException;
+namespace Billers\PayON\Data;
+use Billers\PayON\Data\Exceptions\IncorrectFormatException;
 
 
 /**

@@ -1,5 +1,5 @@
 <?php
-namespace Billers\PayON\BankTransfer;
+namespace Billers\PayON\Data\BankAccount;
 use Billers\PayON\BankTransfer\BankAccount\Mandate;
 use Billers\PayON\BankTransfer\Exceptions\IncorrectFormatException;
 

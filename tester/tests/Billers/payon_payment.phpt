@@ -1,34 +1,53 @@
 <?php
+
 require __DIR__ . '/../../bootstrap.php';
-
 //\Tracy\Debugger::enable();
-class PayONBillerCreditCardTest extends \Tester\TestCase
+class PayONBillerTest extends \Tester\TestCase
 {
-	/** @var  \Billers\PayON\CreditCard\PayONBiller */
+	/** @var  \Billers\PayON\PayONBiller */
 	protected $biller;
-	/** @var  \CzechCash\Billers\Structures\CreditCards\ICreditCard */
-	protected $creditCard;
-
 
 	public function setUp()
 	{
-		$this->biller = new \Billers\PayON\CreditCard\PayONBiller();
-		$expiry = new \CzechCash\Billers\Structures\CreditCards\CreditCardExpiry('05/18');
-		$this->creditCard = new \CzechCash\Billers\Structures\CreditCards\CreditCard('377777777777770', $expiry, 1234, 'Jane Jones');
-
+		$this->biller = new \Billers\PayON\PayONBiller();
 	}
 
-	public function testPayment()
+	public function testBankTransferPayment()
 	{
-		$details = [
-			'currency' => "EUR",
-			'paymentBrand' => "AMEX",
-			'paymentType' => "DB"
-		];
+		$transferDetails = new \Billers\PayON\Data\TransferDetails();
+		$bankAccount = new \Billers\PayON\Data\BankAccount\BankAccount();
 
-		\Tester\Assert::true($this->biller->createCreditCardPayment(10, $this->creditCard, $details)->process());
+		$bankAccount
+			->setBic('MARKDEF1100')
+			->setIban('DE23100000001234567890')
+			->setCountry("DE")
+			->setHolder('Jane Jones');
+
+		$transferDetails
+			->setCurrency("EUR")
+			->setAmount(10)
+			->setPaymentBrand('DIRECTDEBIT_SEPA')
+			->setPaymentType('DB')
+			->setBankAccount($bankAccount);
+
+		\Tester\Assert::true($this->biller->createPayment($transferDetails)->process());
 	}
+
+	public function testCreditCardPayment(){
+		$transferDetails = new \Billers\PayON\Data\TransferDetails();
+		$expiry = new \CzechCash\Billers\Structures\CreditCards\CreditCardExpiry("05/18");
+		$creditCard = new \CzechCash\Billers\Structures\CreditCards\CreditCard('377777777777770', $expiry, "1234", "Jane Jones");
+
+		$transferDetails->setCard($creditCard)
+			->setAmount(92.00)
+			->setCurrency("EUR")
+			->setPaymentBrand("AMEX")
+			->setPaymentType("DB");
+
+		Tester\Assert::true($this->biller->createPayment($transferDetails)->process());
+	}
+
 }
 
-$testCase1 = new \PayONBillerCreditCardTest();
-$testCase1->run();
+$testCase2 = new PayONBillerTest();
+$testCase2->run();

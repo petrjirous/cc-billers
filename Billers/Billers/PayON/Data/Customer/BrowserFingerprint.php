@@ -1,5 +1,5 @@
 <?php
-namespace Billers\PayON\BankTransfer\Customer;
+namespace Billers\PayON\Data\Customer;
 
 
 /**

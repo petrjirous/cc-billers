@@ -1,10 +1,10 @@
 <?php
 namespace CzechCash\Billers\Structures\BankTransfers\Interfaces;
-use Billers\PayON\BankTransfer\BankAccount;
-use Billers\PayON\BankTransfer\Billing;
-use Billers\PayON\BankTransfer\Customer;
+use Billers\PayON\BankTransfer\BankAccount\BankAccount;
+use Billers\PayON\Data\Billing;
+use Billers\PayON\Data\Customer;
 use Billers\PayON\BankTransfer\Exceptions\IncorrectFormatException;
-use Billers\PayON\BankTransfer\TransferDetails;
+use Billers\PayON\Data\TransferDetails;
 
 
 /**
