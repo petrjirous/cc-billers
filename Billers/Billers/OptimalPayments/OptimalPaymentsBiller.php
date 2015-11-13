@@ -1,93 +1,107 @@
 <?php
-
-namespace CzechCash\Billers\Billers\OptimalPayments;
+namespace Billers\OptimalPayments;
 
 use CzechCash\Billers\Billers\BaseBiller;
-use CzechCash\Billers\ICreditCardBiller;
-use CzechCash\Billers\Structures\CreditCards\ICreditCard;
-use CzechCash\Billers\Structures\Payments\CreditCardPayment;
-use CzechCash\Billers\Structures\Payments\ICreditCardPayment;
-use Nette\Utils\Callback;
+use CzechCash\Billers\Interfaces\IAsyncBiller;
+use CzechCash\Billers\Structures\Exceptions\CheckoutFailedException;
+use CzechCash\Billers\Structures\Exceptions\CheckoutNotExistException;
+use CzechCash\Billers\Structures\Exceptions\PaymentStatusNotResponseException;
 use Nette\Utils\Random;
-use OptimalPayments\CardPayments\Authorization;
 use OptimalPayments\Environment;
+use OptimalPayments\HostedPayment\Order;
 use OptimalPayments\OptimalApiClient;
 use Tracy\Debugger;
 
-class OptimalPaymentsBiller extends BaseBiller implements ICreditCardBiller
+
+/**
+ *
+ *
+ * @author Kenny
+ * @package Billers\OptimalPayments
+ */
+class OptimalPaymentsBiller extends BaseBiller implements IAsyncBiller
 {
-    protected $configFile = __DIR__ . '/config/optimalPayments.neon';
+	const PAYMENTMETHOD_CARD = "card",
+		PAYMENTMETHOD_GIROPAY = "giropay",
+		PAYMENTMETHOD_IDEAL = "ideal",
+		PAYMENTMETHOD_INTERAC = "interac",
+		PAYMENTMETHOD_MASTERPASS = "masterpass",
+		PAYMENTMETHOD_NETELLER = "neteller",
+		PAYMENTMETHOD_PAYNEARME = "paynearme",
+		PAYMENTMETHOD_PAYPAL = "paypal",
+		PAYMENTMETHOD_PINGIT = "pingit",
+		PAYMENTMETHOD_POLI = "poli",
+		PAYMENTMETHOD_PREPAIDCARD = "prepaidcard",
+		PAYMENTMETHOD_SOFORTBANKING = "sofortbanking",
+		PAYMENTMETHOD_UKASH = "ukash";
 
+	const STATUS_SUCCESS = "success",
+		STATUS_CANCELLED = "cancelled",
+		STATUS_DECLINED = "declined",
+		STATUS_PENDING = "pending",
+		STATUS_ABANDONED = "abandoned",
+		STATUS_HELD = "held",
+		STATUS_ERRORED = "errored";
 
-    /**
-     * @var OptimalApiClient
-     */
-    protected $client;
+	protected $configFile = __DIR__ . '/config/optimalPayments.neon';
 
+	protected $client;
 
-    public function __construct()
-    {
-        parent::__construct();
+	public function __construct()
+	{
+		parent::__construct();
 
-        $this->client = new OptimalApiClient($this->config['apiKey'], $this->config['apiSecret'], Environment::TEST, $this->config['accountID']);
-    }
+		$this->client = new OptimalApiClient($this->config['apiKey'], $this->config['apiSecret'], Environment::TEST, $this->config['accountID']);
+	}
 
+	/**
+	 * @inheritDoc
+	 */
+	public function isServiceAvailable()
+	{
+		return $this->client->cardPaymentService()->monitor();
+	}
 
-    /**
-     * Checks if service is available
-     *
-     * @return bool
-     */
-    public function isServiceAvailable()
-    {
-        return $this->client->cardPaymentService()->monitor();
-    }
+	public function createCheckout($amount, $currency)
+	{
+		$order = new Order([
+			'merchantRefNum' => Random::generate(10, '0-9A-Z'), // TODO nezapomenout nastavit na real merchant number
+			'currencyCode' => $currency,
+			'totalAmount' => (int)($amount * 100),
+			'paymentMethod' => [self::PAYMENTMETHOD_CARD]
+			//TODO add users IP
+		]);
 
+		$response = $this->client->hostedPaymentService()->processOrder($order);
 
-    public function testPayment($amount, ICreditCard $card, $details = [])
-    {
-        $auth = new Authorization([
-            'merchantRefNum' => Random::generate(10, '0-9'),
-            'amount' => $amount,
-            'settleWithAuth' => true,
-            'card' => self::formatCreditCard($card),
-            'billingDetails' => $details
-        ]);
+		if ($response !== null) {
+			$this->paymentSection->order = $response;
+			foreach ($response->link as $link) {
+				if ($link->rel === "hosted_payment" && $link->uri !== null) {
+					$this->response->redirect($link->uri);
+					break;
+				}
+			}
+			throw new CheckoutFailedException;
+		}
 
-        return $this->client->cardPaymentService()->authorize($auth);
-    }
+		return $response;
+	}
 
-
-    public static function formatCreditCard(ICreditCard $card)
-    {
-        return [
-            'cardNum' => $card->getNumber(),
-            'cvv' => (int)$card->getCvv(),
-            'cardExpiry' => [
-                'month' => (int)$card->getExpiration()->getMonth(),
-                'year' => (int)$card->getExpiration()->getYear('Y')
-            ]
-        ];
-    }
-
-    /**
-     * @param $amount
-     * @param ICreditCard $card
-     * @param $details
-     * @return ICreditCardPayment
-     */
-    public function createCreditCardPayment($amount, ICreditCard $card, $details)
-    {
-        $payment = new CreditCardPayment($amount, $card, $details);
-        $payment->setCreditCard($card);
-        $payment->onProcess = [$this, 'testPayment'];
-        $payment->validate = new CreditCardPaymentValidator();
-        $payment->onFailure = function ($response) {
-            return false;
-        };
-        $payment->onSuccess = function ($response) {
-            return true;
-        };
-        return $payment;
-    }
+	public function checkPaymentStatus()
+	{
+		if ($this->paymentSection->order !== null && isset($this->paymentSection->order->id)) {
+			$order = $this->client->hostedPaymentService()->getOrder(new Order([
+				'id' => $this->paymentSection->order->id
+			]));
+		} else {
+			throw new CheckoutNotExistException;
+		}
+		if ($order !== null && isset($order->transaction) && isset($order->transaction->status)) {
+			unset($this->paymentSection->order);
+			return $order->transaction->status === self::STATUS_SUCCESS;
+		}else{
+			throw new PaymentStatusNotResponseException;
+		}
+	}
 }

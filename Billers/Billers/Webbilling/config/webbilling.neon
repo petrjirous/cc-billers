@@ -1,0 +1,32 @@
+host: testmerchant.webbilling.com
+protocol: http
+authentication:
+    merchantId: test
+    password: test
+    profileId: default
+
+countries:
+    austria:
+        parameters:
+            - BankAccountNumber
+            - BankRoutingNumber
+    france:
+        parameters:
+            - BankAccountNumber
+            - BankRoutingNumber
+    germany:
+        parameters:
+            - BankAccountNumber
+            - BankRoutingNumber
+    spain:
+        parameters:
+            - BankAccountNumber
+            - BankRoutingNumber
+    the_netherlands:
+        parameters:
+            - BankAccountNumber
+            - BankRoutingNumber
+    united_kingdom:
+        parameters:
+            - BankAccountNumber
+            - BankRoutingNumber

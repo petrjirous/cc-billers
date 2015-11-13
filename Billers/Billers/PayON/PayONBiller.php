@@ -1,22 +1,25 @@
 <?php
 namespace Billers\PayON;
 
-use Billers\PayON\Data\Exceptions\UnsupportedTypeException;
 use CzechCash\Billers\Billers\BaseBiller;
-use CzechCash\Billers\Structures\BankTransfers\Interfaces\ITransferDetails;
-use CzechCash\Billers\Structures\Payments\PayONPayment;
+use CzechCash\Billers\Interfaces\IAsyncBiller;
+use CzechCash\Billers\Structures\Exceptions\CheckoutFailedException;
+use CzechCash\Billers\Structures\Exceptions\CheckoutNotExistException;
+use CzechCash\Billers\Structures\Exceptions\PaymentStatusNotResponseException;
 use Tracy\Debugger;
-
 
 /**
  *
  *
  * @author Kenny
- * @package Billers\PayON\BankTransfer
+ * @package Billers\PayON
  */
-class PayONBiller extends BaseBiller
+class PayONBiller extends BaseBiller implements IAsyncBiller
 {
 	protected $configFile = __DIR__ . '/config/payOn.neon';
+
+	const STATUS_CHECKOUT_SUCCESS = "000.200.100",
+		STATUS_PAYMENT_SUCCESS = "000.100.110";
 
 	/**
 	 * @inheritDoc
@@ -27,42 +30,48 @@ class PayONBiller extends BaseBiller
 		return $rval === 0;
 	}
 
-	public function createPayment(ITransferDetails $transferDetails)
+	public function createCheckout($amount, $currency)
 	{
-		$payment = new PayONPayment($transferDetails);
-		$payment->setTransferDetails($transferDetails);
-		$payment->onProcess = array($this, 'processPayment');
+		$requestFields = $this->getAuthentication();
+		$requestFields['amount'] = $amount;
+		$requestFields['currency'] = $currency;
+		$requestFields['paymentType'] = "PA";
 
-		$type = $this->config['brands'][strtolower($transferDetails->getPaymentBrand())]['type'];
+		$url = join("/", [$this->getRequestUrl(), $this->config['checkoutUrl']]);
 
-		// TODO dopsat validator
-		if ($type === "creditcard") {
-			$payment->validate = new CreditCardPaymentValidator();
-		} elseif ($type === "banktransfer") {
-			$payment->validate = new BankTransferPaymentValidator();
+		$response = $this->sendRequest($url, $requestFields);
+
+		if ($response !== null && $response->result->code === self::STATUS_CHECKOUT_SUCCESS) {
+			$this->paymentSection->order = $response;
+			Debugger::barDump($response, 'response');
+			Debugger::barDump($response->id, 'response id');
+			return $response->id;
 		} else {
-			throw new UnsupportedTypeException();
+			throw new CheckoutFailedException;
 		}
-		$payment->onFailure = function ($response) {
-			return false;
-		};
-		$payment->onSuccess = function ($response) {
-			return true;
-		};
-		return $payment;
 	}
 
-	public function getRequestUrl()
+	public function checkPaymentStatus()
 	{
-		$url = $this->config['protocol'] . "://" . $this->config['host'];
-		return join("/", [
-			$url,
-			$this->config['apiVersion'],
-			$this->config['paymentUrl']
-		]);
+
+		if ($this->paymentSection->order !== null && isset($this->paymentSection->order->id)) {
+			$url = join("/", [$this->getRequestUrl(),
+				$this->config['checkoutUrl'],
+				$this->paymentSection->order->id, 'payment']);
+		} else {
+			throw new CheckoutNotExistException;
+		}
+		$requestFields = $this->getAuthentication();
+		$response = $this->sendRequest($url, $requestFields, true);
+
+		if ($response !== null && isset($response->result->code)) {
+			return $response->result->code === self::STATUS_PAYMENT_SUCCESS;
+		} else {
+			throw new PaymentStatusNotResponseException;
+		}
 	}
 
-	public function getAuthentication()
+	private function getAuthentication()
 	{
 		return [
 			"authentication.userId" => $this->config['authentication']['userId'],
@@ -71,25 +80,27 @@ class PayONBiller extends BaseBiller
 		];
 	}
 
-	public function processPayment(ITransferDetails $transferDetails)
+	private function getRequestUrl()
 	{
+		$url = $this->config['protocol'] . "://" . $this->config['host'];
+		return join("/", [
+			$url,
+			$this->config['apiVersion'],
+		]);
+	}
 
-		$brandOptions = $this->config['brands'][strtolower($transferDetails->getPaymentBrand())];
-		unset($brandOptions['type']);
-
-		if ($brandOptions === null) {
-			$brandOptions = $this->config['brands']['default'];
-		}
-		$requestFields = $transferDetails->getRequest($brandOptions);
-
-		foreach ($this->getAuthentication() as $key => $val) {
-			$requestFields[$key] = $val;
-		}
-
+	private function sendRequest($url, $field, $methodGet = false)
+	{
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->getRequestUrl());
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($requestFields));
+		if($methodGet !== false){
+			$url .= "?" . http_build_query($field);
+			Debugger::barDump($url);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+		}else{
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($field));
+		}
+		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$responseData = curl_exec($ch);
@@ -97,8 +108,10 @@ class PayONBiller extends BaseBiller
 			return curl_error($ch);
 		}
 		curl_close($ch);
-		//echo(http_build_query($requestFields));
-		Debugger::barDump($requestFields);
-		return $responseData;
+
+		if ($responseData !== null) {
+			return json_decode($responseData);
+		}
 	}
+
 }

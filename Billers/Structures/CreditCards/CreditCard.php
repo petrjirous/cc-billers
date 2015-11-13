@@ -9,17 +9,12 @@ class CreditCard implements ICreditCard
     /**
      * @var string Credit card number
      */
-    protected $number;
+    protected $last4Digits;
 
     /**
      * @var ICreditCardExpiry Credit card expiration
      */
     protected $expiration;
-
-    /**
-     * @var string Credit card CVV
-     */
-    protected $cvv;
 
 	/**
 	 * @var string Credit card holder
@@ -27,13 +22,30 @@ class CreditCard implements ICreditCard
 	protected $holder;
 
 
-    public function __construct($number, $expiration, $cvv, $holder)
+    public function __construct($number, $expiration, $holder)
     {
-        $this->number = $number;
+        $this->last4Digits = $number;
         $this->expiration = $expiration;
-        $this->cvv = $cvv;
 	    $this->holder = $holder;
     }
+
+	/**
+	 * @return string
+	 */
+	public function getLast4Digits()
+	{
+		return $this->last4Digits;
+	}
+
+	/**
+	 * @param string $last4Digits
+	 * @return CreditCard
+	 */
+	public function setLast4Digits($last4Digits)
+	{
+		$this->last4Digits = $last4Digits;
+		return $this;
+	}
 
 	/**
 	 * @inheritDoc
@@ -43,23 +55,6 @@ class CreditCard implements ICreditCard
 		return $this->holder;
 	}
 
-
-	/**
-     * @inheritDoc
-     */
-    public function getNumber()
-    {
-        return $this->number;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getCvv()
-    {
-        return $this->cvv;
-    }
-
     /**
      * @inheritDoc
      */
@@ -68,13 +63,6 @@ class CreditCard implements ICreditCard
         return $this->expiration;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getLastDigits()
-    {
-        return substr($this->number, -4);
-    }
 
     /**
      * @inheritDoc
@@ -83,20 +71,4 @@ class CreditCard implements ICreditCard
     {
         return $this->expiration->isValid() === false;
     }
-
-	/**
-	 * @inheritDoc
-	 */
-	public function getExpiryYear()
-	{
-		return $this->expiration->getYear("Y");
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function getExpiryMonth()
-	{
-		return $this->expiration->getMonth("m");
-	}
 }

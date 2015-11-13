@@ -15,46 +15,16 @@ interface ICreditCard
 	public function getHolder();
 
     /**
-     * Gets credit card number
+     * Gets last 4 digits from card number
      *
      * @return string Credit card number
      */
-    public function getNumber();
-
-
-    /**
-     * Gets credit card CVV
-     *
-     * @return int CVV
-     */
-    public function getCvv();
-
+    public function getLast4Digits();
 
     /**
      * @return ICreditCardExpiry
      */
     public function getExpiration();
-
-	/**
-	 * Get credit card expiration year
-	 *
-	 * @return int
-	 */
-	public function getExpiryYear();
-
-	/**
-	 * Get credit card expiration month
-	 *
-	 * @return int
-	 */
-	public function getExpiryMonth();
-
-
-    /**
-     * @return string Last digits of CC
-     */
-    public function getLastDigits();
-
 
     /**
      * @return bool Check if credit card is not expired

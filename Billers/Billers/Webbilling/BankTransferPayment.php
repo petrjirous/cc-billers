@@ -1,6 +1,8 @@
 <?php
-namespace CzechCash\Billers\Structures\Payments;
+namespace Billers\Webbilling;
 use CzechCash\Billers\Structures\BankTransfers\Interfaces\ITransferDetails;
+use CzechCash\Billers\Structures\Payments\Interfaces\IBankTransferPayment;
+use CzechCash\Billers\Structures\Payments\BasePayment;
 use Nette\Utils\Callback;
 
 
@@ -8,17 +10,18 @@ use Nette\Utils\Callback;
  *
  *
  * @author Kenny
- * @package CzechCash\Billers\Structures\Payments
+ * @package Billers\Webbilling
  */
-class PayONBasePayment extends BasePayment
+class BankTransferBasePayment extends BasePayment implements IBankTransferPayment
 {
+
 	/**
 	 * @var ITransferDetails
 	 */
 	protected $transferDetails;
 
 	/**
-	 * PayONBasePayment constructor.
+	 * BankTransferBasePayment constructor.
 	 * @param ITransferDetails $transferDetails
 	 */
 	public function __construct(ITransferDetails $transferDetails)
@@ -26,7 +29,8 @@ class PayONBasePayment extends BasePayment
 		$this->transferDetails = $transferDetails;
 	}
 
-	public function process(){
+	public function process()
+	{
 		$this->checkHandlers();
 
 		$response = Callback::invoke($this->onProcess, $this->transferDetails);
@@ -42,6 +46,13 @@ class PayONBasePayment extends BasePayment
 		return $response;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	public function validate($response)
+	{
+		return Callback::invoke($this->validate, $response);
+	}
 
 	/**
 	 * @inheritDoc
@@ -49,7 +60,6 @@ class PayONBasePayment extends BasePayment
 	public function setTransferDetails(ITransferDetails $transferDetails)
 	{
 		$this->transferDetails = $transferDetails;
-		return $this;
 	}
 
 	/**
@@ -58,14 +68,6 @@ class PayONBasePayment extends BasePayment
 	public function getTransferDetails()
 	{
 		return $this->transferDetails;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function validate($response)
-	{
-		return Callback::invoke($this->validate, $response);
 	}
 
 }

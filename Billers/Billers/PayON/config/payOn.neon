@@ -2,6 +2,7 @@ host: test.oppwa.com
 protocol: https
 apiVersion: v1
 paymentUrl: payments
+checkoutUrl: checkouts
 authentication:
     userId: 8a8294174b7ecb28014b9699220015cc
     password: sy6KJsT8
@@ -29,3 +30,9 @@ brands:
         - card.expiryMonth
         - card.expiryYear
         - card.cvv
+
+directdebit_sepa:
+    type: banktransfer
+
+amex:
+    type: creditcard

@@ -6,7 +6,7 @@ namespace CzechCash\Billers\Structures\Payments;
 use CzechCash\Billers\Structures\CreditCards\ICreditCard;
 use OptimalPayments\HostedPayment\Callback;
 
-class CreditCardPayment extends Payment implements ICreditCardPayment
+class CreditCardBasePayment extends BasePayment implements ICreditCardPayment
 {
     /**
      * @var ICreditCard
